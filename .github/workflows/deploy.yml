@@ -26,12 +26,10 @@ jobs:
           -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}'
           -e DB_NAME='exampledb'
           cicd-actions-app:latest
-
-       - name: Run application test
-         run: |
+      
+      - name: Run application test
+        run: |
           python3 -m venv test-env
-
           source test-env/bin/activate
           pip install requests
-
           python test_app.py
