@@ -1,0 +1,33 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t cicd-actions-app:latest .
+
+      - name: Stop and remove existing container
+        run: docker rm -f cicd-actions-container || true
+
+      - name: Run new container
+        run: >
+          docker run -d --name cicd-actions-container -p 8501:8501
+          --add-host=host.docker.internal:host-gateway
+          -e DB_HOST='host.docker.internal'
+          -e DB_USER='exampleuser'
+          -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}'
+          -e DB_NAME='exampledb'
+          cicd-actions-app:latest
+      
+      - name: Run application test
+        run: |
+          pip install requests
+          python test_app.py
